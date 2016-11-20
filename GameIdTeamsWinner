@@ -1,0 +1,62 @@
+def Results(FileIn, FileOut):
+    GameId = []; UniqueGameId = []; Teams = []; GameResults = []; 
+    Team1Score = []; Team2Score = []; Index = 0; UniqueScore=[]
+
+# The following for-loop appends all files with the end .dat to the list filenames.
+# This condition statement checks if the xy.dat is present in the directory.
+    filenamein = open(FileIn, 'r')
+    lines = filenamein.readlines()[1:]
+    for item in lines:
+        LineElements = item.split()
+        GameId.append(LineElements[0])
+        if len(LineElements[3]) == 4:
+            if LineElements[3][1:] == LineElements[0][-6:-3]:
+                if LineElements[4][2] == '-':
+                    Team1Score.append([LineElements[0][-6:], LineElements[3] + LineElements[4]])
+            elif LineElements[3][1:] == LineElements[0][-3:]:
+                if LineElements[4][2] == '-':
+                    Team2Score.append([LineElements[0][-6:], LineElements[3] + LineElements[4]])
+    UniqueGameId.append(GameId[Index])
+    Teams.append((UniqueGameId[Index][-6:-3], UniqueGameId[Index][-3:]))
+    
+    for i in range(len(GameId) - 2):
+         if GameId[i+1] != GameId[i+2]:
+             Index += 1
+             UniqueGameId.append(GameId[i+2])
+             Teams.append([UniqueGameId[Index][-6:-3], UniqueGameId[Index][-3:]])
+    
+    for i in range(len(UniqueGameId)):
+        Scores1=[]; Scores2=[]
+        for j in range(len(Team2Score)):
+            if Teams[i][1] == Team2Score[j][0][-3:] and Teams[i][0] == Team2Score[j][0][-6:-3]:
+                if 0 < int(Team2Score[j][1][4:6]):
+                    Scores2.append(int(Team2Score[j][1][4:6]))
+        for j in range(len(Team1Score)):
+            if Teams[i][0] == Team1Score[j][0][-6:-3] and Teams[i][1] == Team1Score[j][0][-3:]:
+                if 0 < int(Team1Score[j][1][4:6]):
+                    Scores1.append(int(Team1Score[j][1][4:6]))
+        if max(Scores1) < max(Scores2):
+            UniqueScore.append(Teams[i][1])
+        else:
+            UniqueScore.append(Teams[i][0]) 
+    filenamein.close()
+    
+    with open(FileOut, 'a') as filenameout:
+        filenameout.write('{} \n'.format(FileIn))
+        for i in range(len(UniqueScore)):
+            Team = '{}, {}'.format(Teams[i][0], Teams[i][1])
+            TeamsWin = '{} \t {}'.format(Team, UniqueScore[i])
+            filenameout.write('{} \t {}\n'.format(UniqueGameId[i], TeamsWin))         
+        filenameout.write('\n')
+    return 'Done'
+    
+    
+FilesIn = ['playbyplay2007playoffs20081211.txt', 'playbyplay2008playoffs20081211.txt', \
+           'playbyplay20072008reg20081211.txt', 'playbyplay20082009reg20090420.txt', \
+           'playbyplay20092010reg20100418.txt', 'playbyplay20102011reg20110416.txt', \
+           'playbyplay20120510040.txt', 'playbyplay200704201041.txt', \
+           'playbyplay200906142332.txt', 'playbyplay201010122346.txt', \
+           'playbyplay201106122333.txt']
+FileOut = 'GameIdTeamsWinner.txt'
+for i in range(len(FilesIn)):
+    FunCall = Results(FilesIn[i], FileOut)
